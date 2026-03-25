@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion'
 
-const A = '/assets'
+const A = `${import.meta.env.BASE_URL}assets`
 
 const EC_IMAGES = {
   goldenWild:  `${A}/wild_ec.jpeg`,         // "WILD" shield badge for EC slots

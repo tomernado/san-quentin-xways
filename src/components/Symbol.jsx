@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 
 // ── Asset paths ──────────────────────────────────────────────────────────────
-const A = '/assets'
+const A = `${import.meta.env.BASE_URL}assets`
 
 // Main-grid images (keyed by symbol.id)
 const SYMBOL_IMAGES = {

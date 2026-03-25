@@ -13,7 +13,7 @@ export default function TransitionScreen() {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0, transition: { duration: 0.4 } }}
           style={{
-            backgroundImage:    'url(/assets/bonus_entry_background.jpg)',
+            backgroundImage:    `url(${import.meta.env.BASE_URL}assets/bonus_entry_background.jpg)`,
             backgroundSize:     'cover',
             backgroundPosition: 'center',
             backgroundColor:    '#000',

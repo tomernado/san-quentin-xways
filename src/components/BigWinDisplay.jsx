@@ -63,9 +63,10 @@ function useCountUp(target, onDone) {
   return { display, skip }
 }
 
+const BASE = import.meta.env.BASE_URL
 const WIN_BACKGROUNDS = [
-  '/assets/win_background_1.jpeg',
-  '/assets/win_background_2.jpeg',
+  `${BASE}assets/win_background_1.jpeg`,
+  `${BASE}assets/win_background_2.jpeg`,
 ]
 
 function BigWinScene({ winAmount, onDismiss }) {

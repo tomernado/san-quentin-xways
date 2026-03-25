@@ -15,7 +15,7 @@ export default function App() {
     <div
       className="relative min-h-screen flex flex-col items-center justify-center p-4 overflow-hidden"
       style={{
-        backgroundImage:    'url(/assets/general_background.jpeg)',
+        backgroundImage:    `url(${import.meta.env.BASE_URL}assets/general_background.jpeg)`,
         backgroundSize:     'cover',
         backgroundPosition: 'center',
         backgroundColor:    '#030712',   // fallback while image loads
