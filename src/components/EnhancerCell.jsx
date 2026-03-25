@@ -56,10 +56,6 @@ export default function EnhancerCell({ symbol, isWinning }) {
                 pointerEvents: 'none',
               }}
             />
-            {/* Fallback when image missing */}
-            <span className="absolute inset-0 flex items-center justify-center text-white/25 text-xs font-mono">
-              EC
-            </span>
           </motion.div>
 
         ) : isSpinCount ? (

@@ -25,13 +25,17 @@ function makeGuaranteedGrid(scatterCount) {
     const j = Math.floor(Math.random() * (i + 1));
     [indices[i], indices[j]] = [indices[j], indices[i]]
   }
-  const bonusSet = new Set(indices.slice(0, scatterCount))
-  const bonusSym = { id: 'bonus', name: 'BONUS', color: '#f59e0b' }
-  return Array.from({ length: REELS }, (_, ri) => {
-    const reel = generateReel(ROWS)
+  const bonusCols = indices.slice(0, scatterCount)
+  const bonusSet  = new Set(bonusCols)
+  const bonusSym  = { id: 'bonus', name: 'BONUS', color: '#f59e0b' }
+  // Use generateBonusReel (no bonus/wild symbols) to prevent natural scatter contamination.
+  // Only the explicitly chosen bonusCols get a bonus symbol placed.
+  const grid = Array.from({ length: REELS }, (_, ri) => {
+    const reel = generateBonusReel(ROWS)
     if (bonusSet.has(ri)) reel[Math.floor(Math.random() * ROWS)] = bonusSym
     return reel
   })
+  return { grid, bonusCols }
 }
 
 function moveJumpingWilds(wilds) {
@@ -248,8 +252,7 @@ export const useGameStore = create((set, get) => ({
     const cost = costs[scatterCount]
     if (spinPhase !== 'idle' || bonusMode || balance < cost) return
 
-    const grid     = makeGuaranteedGrid(scatterCount)
-    const bonusCols = grid.map((col, i) => col.some(s => s.id === 'bonus') ? i : -1).filter(i => i >= 0)
+    const { grid, bonusCols } = makeGuaranteedGrid(scatterCount)
 
     set({ balance: +(balance - cost).toFixed(2), showBonusBuy: false })
     get()._triggerBonusMode(grid, bonusCols, scatterCount - 2)
@@ -270,6 +273,7 @@ export const useGameStore = create((set, get) => ({
       spinPhase:     'bonusPhase',
       freeSpinsLeft: freeSpinsLeft - 1,
       jumpingWilds:  movedWilds,
+      grid:          makeGrid(),       // clear previous spin's symbols
       winAmount:     0,
       winningCells:  new Set(),
       showWin:       false,
