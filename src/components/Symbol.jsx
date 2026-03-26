@@ -27,7 +27,7 @@ const SYMBOL_IMG_STYLE = {
   bikerCarl:   { objectFit: 'cover', objectPosition: 'center 15%' },
   crazyJoe:    { objectFit: 'cover', objectPosition: 'center 15%' },
   goldenWild:  { objectFit: 'cover', objectPosition: 'center' },
-  bonus:       { objectFit: 'contain', objectPosition: 'center', transform: 'scale(0.92)' },
+  bonus:       { objectFit: 'cover', objectPosition: 'center center' },
   soap:        { objectFit: 'cover', objectPosition: 'center' },
   lighter:     { objectFit: 'cover', objectPosition: 'center' },
   shank:       { objectFit: 'cover', objectPosition: 'center' },
@@ -149,6 +149,19 @@ export default function Symbol({ symbol, isWinning, alarmMode, jwMultiplier, isD
             pointerEvents: 'none',
             zIndex: 3,
             ...imgStyle,
+          }}
+        />
+      )}
+
+      {/* Premium colour tint — radiates border colour into the image (zIndex 4) */}
+      {isPremiumChar && (
+        <div
+          style={{
+            position: 'absolute', inset: 0,
+            zIndex: 4,
+            borderRadius: '5px',
+            pointerEvents: 'none',
+            background: `radial-gradient(ellipse at 50% 35%, ${symbol.color}18 0%, ${symbol.color}38 60%, ${symbol.color}60 100%)`,
           }}
         />
       )}
