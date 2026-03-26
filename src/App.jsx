@@ -13,7 +13,7 @@ export default function App() {
 
   return (
     <div
-      className="relative min-h-screen flex flex-col items-center justify-center p-4 overflow-hidden"
+      className="relative min-h-[100dvh] flex flex-col items-center justify-center p-2 sm:p-4 overflow-hidden"
       style={{
         backgroundImage:    `url(${import.meta.env.BASE_URL}assets/general_background.jpeg)`,
         backgroundSize:     'cover',
@@ -40,8 +40,8 @@ export default function App() {
       )}
 
       {/* Header */}
-      <div className="relative z-10 mb-4 text-center">
-        <h1 className="text-3xl font-black tracking-widest text-yellow-400 uppercase">
+      <div className="relative z-10 mb-2 sm:mb-4 text-center">
+        <h1 className="text-xl sm:text-3xl font-black tracking-widest text-yellow-400 uppercase">
           San Quentin <span className="text-white">xWays</span>
         </h1>
         <p className="text-yellow-600 text-xs tracking-widest mt-1">WIN UP TO 150,000X</p>

@@ -1,17 +1,15 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 
-// ── Asset paths ──────────────────────────────────────────────────────────────
 const A = `${import.meta.env.BASE_URL}assets`
 
-// Main-grid images (keyed by symbol.id)
 const SYMBOL_IMAGES = {
   beefyDick:   `${A}/beefy_dick.jpeg`,
   locoLuis:    `${A}/loco_luis.jpeg`,
   heinrich3rd: `${A}/heinrich_3rd.jpeg`,
   bikerCarl:   `${A}/biker_carl.jpeg`,
   crazyJoe:    `${A}/crazy_joe.jpeg`,
-  goldenWild:  `${A}/wild_split.jpeg`,      // base-game SPLIT WILD badge
+  goldenWild:  `${A}/wild_ec.jpeg`,       // clean WILD badge (no "SPLIT" text)
   bonus:       `${A}/bonus_scatter.jpg`,
   soap:        `${A}/soap.jpeg`,
   lighter:     `${A}/lighter.jpeg`,
@@ -20,11 +18,8 @@ const SYMBOL_IMAGES = {
   toiletPaper: `${A}/toilet_paper.jpeg`,
 }
 
-// Jumping wild (bonus mode) uses a distinct badge image
 const JW_IMAGE = `${A}/jumping_wild_bonus.jpeg`
 
-// Per-symbol crop settings — character faces fill cell top-center;
-// items and specials fill full cell centered.
 const SYMBOL_IMG_STYLE = {
   beefyDick:   { objectFit: 'cover', objectPosition: 'center 15%' },
   locoLuis:    { objectFit: 'cover', objectPosition: 'center 15%' },
@@ -40,23 +35,21 @@ const SYMBOL_IMG_STYLE = {
   toiletPaper: { objectFit: 'cover', objectPosition: 'center' },
 }
 
-// Premium character IDs — get a distinct colored glow border
 const PREMIUM_IDS = new Set(['beefyDick', 'locoLuis', 'heinrich3rd', 'bikerCarl', 'crazyJoe'])
 
-// ── Component ────────────────────────────────────────────────────────────────
-
-export default function Symbol({ symbol, isWinning, alarmMode, jwMultiplier }) {
+export default function Symbol({ symbol, isWinning, alarmMode, jwMultiplier, isDark = false }) {
   const isBonus       = symbol.id === 'bonus'
   const isWild        = symbol.id === 'goldenWild'
   const isJW          = isWild && jwMultiplier != null
   const isPremiumChar = PREMIUM_IDS.has(symbol.id)
 
+  // isJW → use jumping-wild badge; otherwise normal image
   const imageUrl = isJW ? JW_IMAGE : (SYMBOL_IMAGES[symbol.id] ?? null)
   const imgStyle = isJW
     ? { objectFit: 'cover', objectPosition: 'center' }
     : (SYMBOL_IMG_STYLE[symbol.id] ?? { objectFit: 'cover', objectPosition: 'center' })
 
-  // Detect this cell just became a wild (entrance pop)
+  // Wild entrance pop
   const prevIdRef  = useRef(symbol.id)
   const [isNewWild, setIsNewWild] = useState(false)
   useEffect(() => {
@@ -68,7 +61,7 @@ export default function Symbol({ symbol, isWinning, alarmMode, jwMultiplier }) {
     prevIdRef.current = symbol.id
   }, [symbol.id])
 
-  // Detect JW multiplier boost — triggers red pulse
+  // JW multiplier boost pulse
   const prevMultRef = useRef(jwMultiplier)
   const [multiplierJustBoosted, setMultiplierJustBoosted] = useState(false)
   useEffect(() => {
@@ -81,28 +74,27 @@ export default function Symbol({ symbol, isWinning, alarmMode, jwMultiplier }) {
     prevMultRef.current = jwMultiplier
   }, [jwMultiplier])
 
-  // ── Styles ──────────────────────────────────────────────────────────────────
+  // ── Styles ─────────────────────────────────────────────────────────────
   const bgStyle = isWild
     ? { background: 'linear-gradient(135deg, #92400e 0%, #d97706 35%, #fbbf24 60%, #d97706 100%)' }
     : { backgroundColor: symbol.color }
 
-  // Premium characters get a thick, bright colored border; specials get their own treatment
   const borderStyle = isWild
     ? multiplierJustBoosted ? '2px solid #ef4444' : '2px solid #fef08a'
     : isWinning     ? '2px solid #facc15'
     : isBonus       ? '2px solid #f59e0b'
     : isPremiumChar ? `2px solid ${symbol.color}`
-    :                 '1px solid rgba(255,255,255,0.2)'
+    :                 '1px solid rgba(255,255,255,0.18)'
 
   const shadowStyle = multiplierJustBoosted
     ? '0 0 28px #ef4444cc, inset 0 0 12px rgba(239,68,68,0.3)'
     : isWild
       ? '0 0 18px #fbbf24bb, inset 0 0 8px rgba(255,220,80,0.3)'
       : isWinning     ? '0 0 14px #facc15cc'
-      : isPremiumChar ? `0 0 10px 2px ${symbol.color}88`
+      : isPremiumChar ? `0 0 8px 2px ${symbol.color}66`
       : undefined
 
-  // ── Animations ──────────────────────────────────────────────────────────────
+  // ── Animations ─────────────────────────────────────────────────────────
   const animateProps = (() => {
     if (multiplierJustBoosted) return { scale: [1, 1.18, 0.96, 1.05, 1] }
     if (isNewWild)             return { scale: [0.5, 1.2, 1], opacity: [0, 1, 1] }
@@ -129,23 +121,23 @@ export default function Symbol({ symbol, isWinning, alarmMode, jwMultiplier }) {
         ...bgStyle,
         border:    borderStyle,
         boxShadow: shadowStyle,
-        fontSize:  isWild ? '13px' : isBonus ? '11px' : '10px',
+        fontSize:  '10px',
         color:     isWild ? '#000' : '#fff',
       }}
       animate={animateProps}
       transition={transitionProps}
     >
-      {/* Fallback text at z-index 1 — image covers it at z-index 3 */}
+      {/* Text fallback (zIndex 1) — image covers it at zIndex 3 */}
       {isWild ? (
         <>
-          <span style={{ position: 'relative', zIndex: 1, fontSize: '18px', lineHeight: 1 }}>★</span>
+          <span style={{ position: 'relative', zIndex: 1, fontSize: '16px', lineHeight: 1 }}>★</span>
           <span style={{ position: 'relative', zIndex: 1 }}>WILD</span>
         </>
       ) : (
         <span style={{ position: 'relative', zIndex: 1 }}>{symbol.name}</span>
       )}
 
-      {/* Symbol image — covers fallback at z-index 3 */}
+      {/* Symbol image — zIndex 3, covers text fallback */}
       {imageUrl && (
         <img
           src={imageUrl}
@@ -161,17 +153,30 @@ export default function Symbol({ symbol, isWinning, alarmMode, jwMultiplier }) {
         />
       )}
 
-      {/* JW multiplier badge — always above image at z-index 10 */}
+      {/* Dark overlay — covers ALL cells (including wilds) during spin.
+          JWs stay bright because Reel.jsx passes isDark=false when isJW. */}
+      <div
+        style={{
+          position: 'absolute', inset: 0, zIndex: 6,
+          backgroundColor: 'rgba(0,0,0,0.88)',
+          borderRadius: '5px',
+          opacity: isDark ? 1 : 0,
+          transition: 'opacity 0.25s ease',
+          pointerEvents: 'none',
+        }}
+      />
+
+      {/* JW multiplier badge — above everything at zIndex 10 */}
       {isJW && (
         <motion.span
           key={jwMultiplier}
           style={{
-            position:        'absolute', bottom: '4px', right: '4px',
+            position:        'absolute', bottom: '3px', right: '3px',
             zIndex:          10,
-            fontSize:        '13px', fontWeight: 900, lineHeight: 1.4,
+            fontSize:        '11px', fontWeight: 900, lineHeight: 1.4,
             color:           multiplierJustBoosted ? '#fff' : '#ef4444',
-            backgroundColor: multiplierJustBoosted ? '#dc2626' : 'rgba(0,0,0,0.75)',
-            borderRadius:    '4px', padding: '0 5px',
+            backgroundColor: multiplierJustBoosted ? '#dc2626' : 'rgba(0,0,0,0.8)',
+            borderRadius:    '3px', padding: '0 4px',
             border:          multiplierJustBoosted ? '1px solid #fca5a5' : '1px solid #ef444466',
           }}
           initial={{ scale: 1.6, opacity: 0 }}

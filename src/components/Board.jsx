@@ -8,7 +8,7 @@ export default function Board() {
 
   return (
     <div
-      className="relative flex gap-2 p-4 rounded-xl backdrop-blur-sm overflow-hidden"
+      className="relative flex gap-1 sm:gap-2 p-2 sm:p-4 rounded-xl backdrop-blur-sm overflow-hidden"
       style={{
         background:  bonusMode ? 'rgba(10,3,0,0.95)' : 'rgba(0,0,0,0.4)',
         border:      bonusMode ? '1px solid rgba(239,68,68,0.25)' : '1px solid rgba(234,179,8,0.3)',

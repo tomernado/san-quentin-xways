@@ -21,7 +21,7 @@ export default function UIControls() {
 
   return (
     <div
-      className="flex items-center justify-between gap-3 px-6 py-4 border-t rounded-b-xl transition-colors"
+      className="flex items-center justify-between gap-1.5 sm:gap-3 px-2 sm:px-6 py-3 sm:py-4 border-t rounded-b-xl transition-colors"
       style={{
         background:   bonusMode ? 'rgba(10,3,0,0.97)' : 'rgba(17,24,39,0.9)',
         borderColor:  bonusMode ? 'rgba(127,29,29,0.5)' : 'rgba(234,179,8,0.2)',
@@ -30,7 +30,7 @@ export default function UIControls() {
       {/* Auto (disabled placeholder) */}
       <button
         disabled
-        className="w-12 h-12 rounded-full bg-gray-800 border border-white/10 text-white/40 text-xs flex items-center justify-center cursor-not-allowed"
+        className="w-9 h-9 sm:w-12 sm:h-12 rounded-full bg-gray-800 border border-white/10 text-white/40 text-xs flex items-center justify-center cursor-not-allowed"
       >
         AUTO
       </button>
@@ -40,18 +40,18 @@ export default function UIControls() {
         <button
           onClick={lowerBet}
           disabled={isSpinning || bonusMode || betIndex === 0}
-          className="w-8 h-8 rounded bg-gray-700 hover:bg-gray-600 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold transition-colors"
+          className="w-6 h-6 sm:w-8 sm:h-8 rounded bg-gray-700 hover:bg-gray-600 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold transition-colors text-xs sm:text-base"
         >
           ▼
         </button>
         <div className="flex flex-col items-center">
           <span className="text-gray-400 text-xs">BET</span>
-          <span className="text-yellow-400 font-bold w-16 text-center">${bet.toFixed(2)}</span>
+          <span className="text-yellow-400 font-bold w-12 sm:w-16 text-center text-sm sm:text-base">${bet.toFixed(2)}</span>
         </div>
         <button
           onClick={raiseBet}
           disabled={isSpinning || bonusMode || betIndex === BET_LEVELS.length - 1}
-          className="w-8 h-8 rounded bg-gray-700 hover:bg-gray-600 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold transition-colors"
+          className="w-6 h-6 sm:w-8 sm:h-8 rounded bg-gray-700 hover:bg-gray-600 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold transition-colors text-xs sm:text-base"
         >
           ▲
         </button>
@@ -61,7 +61,7 @@ export default function UIControls() {
       <button
         onClick={handleSpin}
         disabled={bonusMode ? !canBonusSpin : !canSpin}
-        className="w-20 h-20 rounded-full font-bold text-sm border-4 transition-all shadow-lg"
+        className="w-16 h-16 sm:w-20 sm:h-20 rounded-full font-bold text-sm border-4 transition-all shadow-lg"
         style={
           bonusMode
             ? (canBonusSpin
@@ -91,7 +91,7 @@ export default function UIControls() {
       <button
         onClick={openBonusBuy}
         disabled={isSpinning || bonusMode}
-        className="w-14 h-14 rounded-full font-bold text-2xl flex items-center justify-center transition-all"
+        className="w-10 h-10 sm:w-14 sm:h-14 rounded-full font-bold text-xl sm:text-2xl flex items-center justify-center transition-all"
         style={{
           background:  isSpinning || bonusMode ? '#374151' : 'linear-gradient(135deg, #fbbf24, #f59e0b)',
           color:       isSpinning || bonusMode ? '#6b7280' : '#000',

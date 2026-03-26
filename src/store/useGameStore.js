@@ -109,7 +109,7 @@ export const useGameStore = create((set, get) => ({
       showWin:      false,
       showBigWin:   false,
     })
-    setTimeout(() => get()._landReel(0), 700)
+    setTimeout(() => get()._landReel(0), 400)
   },
 
   _landReel(reelIndex) {
@@ -266,53 +266,76 @@ export const useGameStore = create((set, get) => ({
     const { bonusMode, freeSpinsLeft, spinPhase, jumpingWilds, bonusActiveReels } = get()
     if (!bonusMode || freeSpinsLeft <= 0 || spinPhase !== 'idle') return
 
-    // ── Phase 1 (0 ms): JWs jump to new positions ─────────────────────────
-    // spinPhase='bonusPhase' disables the button but keeps grid fully visible.
+    // ── Timing constants ──────────────────────────────────────────────────
+    const STAGGER   = 80    // ms between each reel column reveal
+    const TOP_AT    = 220   // ms: first top EC reveals
+    const BOT_AT    = TOP_AT  + REELS * STAGGER + 100   // = 720ms
+    const MULT_AT   = BOT_AT  + REELS * STAGGER + 90    // = 1210ms
+
+    // Pre-generate all new EC content for this spin
+    const allNewECs = makeEmptyECs()
+    bonusActiveReels.forEach(i => {
+      allNewECs[i] = { top: generateECSymbol(), bottom: generateECSymbol() }
+    })
+
+    // ── t=0: Board dark, JW jumps ─────────────────────────────────────────
     const movedWilds = moveJumpingWilds(jumpingWilds)
     set({
       spinPhase:     'bonusPhase',
       freeSpinsLeft: freeSpinsLeft - 1,
       jumpingWilds:  movedWilds,
-      grid:          makeGrid(),       // clear previous spin's symbols
+      grid:          makeGrid(),
+      enhancerCells: makeEmptyECs(),
+      razorCutReel:  -1,
+      splitReels:    [],
       winAmount:     0,
       winningCells:  new Set(),
       showWin:       false,
       showBigWin:    false,
     })
 
-    // ── Phase 2 (+600 ms): ECs reveal new content ─────────────────────────
-    setTimeout(() => {
-      const newECs = makeEmptyECs()
-      bonusActiveReels.forEach(i => {
-        newECs[i] = { top: generateECSymbol(), bottom: generateECSymbol() }
-      })
-      set({ enhancerCells: newECs })
-
-      // ── Phase 3 (+500 ms): JW multipliers update if on razor reel ─────────
+    // ── Top ECs reveal L→R (active reels only) ────────────────────────────
+    for (let r = 0; r < REELS; r++) {
+      if (!bonusActiveReels.includes(r)) continue
       setTimeout(() => {
-        const updatedWilds = movedWilds.map(jw => {
-          const ec = newECs[jw.reelIndex]
-          const hasRazor = ec?.top?.id === 'razorSplit' || ec?.bottom?.id === 'razorSplit'
-          return hasRazor ? { ...jw, multiplier: jw.multiplier * 2 } : jw
+        set(state => {
+          const ecs = state.enhancerCells.map((ec, i) =>
+            i === r ? { top: allNewECs[r].top, bottom: ec.bottom } : ec
+          )
+          return { enhancerCells: ecs }
         })
-        // Only update state if any multiplier actually changed (triggers Symbol pulse)
-        const anyUpdated = updatedWilds.some((w, i) => w.multiplier !== movedWilds[i].multiplier)
-        if (anyUpdated) set({ jumpingWilds: updatedWilds })
+      }, TOP_AT + r * STAGGER)
+    }
 
-        // ── Phase 4 (+600 ms): Reels spin, land left to right ─────────────────
-        setTimeout(() => {
-          set({
-            spinPhase:    'spinning',
-            reelSymbols:  Array(REELS).fill(null),
-            razorCutReel: -1,
-            splitReels:   [],
-          })
-          // Store finalWilds for evaluateBonus to read (may or may not have updated)
-          if (!anyUpdated) set({ jumpingWilds: updatedWilds })
-          setTimeout(() => get()._landBonusReel(0), 700)
-        }, 600)
-      }, 500)
-    }, 600)
+    // ── Bottom ECs reveal L→R (active reels only) ─────────────────────────
+    for (let r = 0; r < REELS; r++) {
+      if (!bonusActiveReels.includes(r)) continue
+      setTimeout(() => {
+        set(state => {
+          const ecs = state.enhancerCells.map((ec, i) =>
+            i === r ? { top: ec.top, bottom: allNewECs[r].bottom } : ec
+          )
+          return { enhancerCells: ecs }
+        })
+      }, BOT_AT + r * STAGGER)
+    }
+
+    // ── JW multiplier update (after ECs visible) ──────────────────────────
+    setTimeout(() => {
+      const updatedWilds = movedWilds.map(jw => {
+        const ec = allNewECs[jw.reelIndex]
+        const hasRazor = ec?.top?.id === 'razorSplit' || ec?.bottom?.id === 'razorSplit'
+        return hasRazor ? { ...jw, multiplier: jw.multiplier * 2 } : jw
+      })
+      const anyUpdated = updatedWilds.some((w, i) => w.multiplier !== movedWilds[i].multiplier)
+      if (anyUpdated) set({ jumpingWilds: updatedWilds })
+
+      // ── Grid reveals L→R ──────────────────────────────────────────────
+      setTimeout(() => {
+        set({ spinPhase: 'spinning', reelSymbols: Array(REELS).fill(null) })
+        setTimeout(() => get()._landBonusReel(0), 250)
+      }, 150)
+    }, MULT_AT)
   },
 
   _landBonusReel(reelIndex) {
