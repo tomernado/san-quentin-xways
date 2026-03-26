@@ -101,17 +101,24 @@ function BigWinScene({ winAmount, onDismiss }) {
   return (
     <motion.div
       className="fixed inset-0 z-40 flex flex-col items-center justify-center cursor-pointer"
-      style={{
-        backgroundImage:    `url(${WIN_BACKGROUNDS[bgIndex]})`,
-        backgroundSize:     'cover',
-        backgroundPosition: 'center',
-        backgroundColor:    '#0a0500',   // fallback
-      }}
+      style={{ backgroundColor: '#0a0500' }}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       onClick={handleClick}
     >
+      {/* Responsive background — contain so image is never cropped on mobile */}
+      <img
+        key={bgIndex}
+        src={WIN_BACKGROUNDS[bgIndex]}
+        alt=""
+        style={{
+          position: 'absolute', inset: 0,
+          width: '100%', height: '100%',
+          objectFit: 'contain', objectPosition: 'center',
+          pointerEvents: 'none',
+        }}
+      />
       {/* Sparkle ring */}
       <motion.div
         className="absolute rounded-full border-4 border-yellow-400/30"
