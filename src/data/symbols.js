@@ -78,15 +78,15 @@ const getBonusReelSymbol = () => {
 export const generateBonusReel = (rows = 3) =>
   Array.from({ length: rows }, () => getBonusReelSymbol())
 
-// Enhancer Cell content: 15% Razor Split, 10% Wild, 75% premium symbol (weighted by tier)
+// Enhancer Cell content: 7% Razor Split, 5% Wild, 88% premium symbol (weighted by tier)
 // Premium weights: beefyDick(1), locoLuis(2), heinrich3rd(3), bikerCarl(5), crazyJoe(7) = 18
 const PREMIUM_WEIGHTS = [1, 2, 3, 5, 7]
 const PREMIUM_TOTAL   = PREMIUM_WEIGHTS.reduce((a, b) => a + b, 0)
 
 export const generateECSymbol = () => {
   const r = Math.random()
-  if (r < 0.15) return { ...RAZOR_SPLIT }
-  if (r < 0.25) return { ...GOLDEN_WILD }
+  if (r < 0.07) return { ...RAZOR_SPLIT }
+  if (r < 0.12) return { ...GOLDEN_WILD }
   let p = Math.random() * PREMIUM_TOTAL
   for (let i = 0; i < PREMIUM_IDS.length; i++) {
     p -= PREMIUM_WEIGHTS[i]
