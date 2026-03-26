@@ -108,48 +108,48 @@ function BigWinScene({ winAmount, onDismiss }) {
       onClick={handleClick}
     >
       {/* Responsive background — contain so image is never cropped on mobile */}
+      {/* Background image — always behind content */}
       <img
         key={bgIndex}
         src={WIN_BACKGROUNDS[bgIndex]}
         alt=""
         style={{
-          position: 'absolute', inset: 0,
+          position: 'absolute', inset: 0, zIndex: 0,
           width: '100%', height: '100%',
           objectFit: 'contain', objectPosition: 'center',
           pointerEvents: 'none',
         }}
       />
-      {/* Sparkle ring */}
+
+      {/* All content above the image */}
       <motion.div
         className="absolute rounded-full border-4 border-yellow-400/30"
-        style={{ width: 340, height: 340 }}
+        style={{ width: 340, height: 340, zIndex: 1 }}
         animate={{ scale: [1, 1.08, 1], opacity: [0.3, 0.7, 0.3] }}
         transition={{ repeat: Infinity, duration: 1.4 }}
       />
 
-      {/* BIG WIN label */}
       <motion.div
         className="text-6xl font-black tracking-tight mb-2 uppercase"
-        style={{ color: '#facc15', textShadow: '0 0 40px #facc15, 0 0 80px #f97316' }}
+        style={{ position: 'relative', zIndex: 2, color: '#facc15', textShadow: '0 0 40px #facc15, 0 0 80px #f97316' }}
         animate={{ scale: [1, 1.05, 1] }}
         transition={{ repeat: Infinity, duration: 0.9 }}
       >
         BIG WIN!
       </motion.div>
 
-      {/* Count-up amount */}
       <motion.div
         className="text-5xl font-black"
-        style={{ color: '#fff', textShadow: '0 0 20px #facc15aa' }}
+        style={{ position: 'relative', zIndex: 2, color: '#fff', textShadow: '0 0 20px #facc15aa' }}
         animate={done ? { scale: [1, 1.15, 1] } : {}}
         transition={{ duration: 0.4 }}
       >
         ${display.toFixed(2)}
       </motion.div>
 
-      {/* Prompt */}
       <motion.p
         className="mt-8 text-white/50 text-sm tracking-widest"
+        style={{ position: 'relative', zIndex: 2 }}
         animate={{ opacity: [0.4, 1, 0.4] }}
         transition={{ repeat: Infinity, duration: 1.5 }}
       >
