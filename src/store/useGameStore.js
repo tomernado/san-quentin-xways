@@ -474,15 +474,16 @@ export const useGameStore = create((set, get) => ({
   // ── Win reveal (shared; handles bonus accumulation) ────────────────────
 
   _showWins() {
-    const state = get()
-    const totalWin  = state._pendingTotalWin || 0
-    const isBig     = !!state._pendingIsBigWin && state.winAmount > 0
-    const isHype    = totalWin >= 50   // $50+ triggers board shake + slow count-up
+    const state    = get()
+    const totalWin = state._pendingTotalWin || 0
+    const isBig    = !!state._pendingIsBigWin && state.winAmount > 0
+    const hasWin   = state.winAmount > 0
+    const isHype   = totalWin >= 50   // $50+ triggers board shake + slow count-up
 
     const updates = {
       balance:    totalWin > 0 ? +(state.balance + totalWin).toFixed(2) : state.balance,
-      showWin:    state.winAmount > 0 && !isBig,
-      showBigWin: false,          // always delayed below
+      showWin:    false,   // always delayed — let cells flash ~3 cycles first
+      showBigWin: false,
       bigWinHype: isHype,
     }
     if (state.bonusMode) {
@@ -490,18 +491,25 @@ export const useGameStore = create((set, get) => ({
     }
     set(updates)
 
-    if (isBig) {
-      // 2.5 s observation time so player sees the winning cells before the popup
-      setTimeout(() => set({ showBigWin: true }), 2500)
+    if (hasWin) {
+      // ~3 flash cycles (3 × 0.65 s ≈ 1950 ms) before the popup.
+      // Guard: only show if we haven't started a new spin by then.
+      const snapWin = state.winAmount
+      setTimeout(() => {
+        const s = get()
+        if (s.spinPhase !== 'idle' || s.winAmount !== snapWin) return
+        if (isBig) set({ showBigWin: true })
+        else       set({ showWin: true })
+      }, 1900)
     }
 
-    // End bonus if last spin and nothing to wait for
-    if (state.bonusMode && state.freeSpinsLeft <= 0 && !updates.showWin && !isBig) {
+    // End bonus if last spin and no win at all
+    if (state.bonusMode && state.freeSpinsLeft <= 0 && !hasWin) {
       setTimeout(() => get()._endBonus(), 800)
     }
 
-    // Auto-play: advance if there is no win overlay to wait for
-    if (!updates.showWin && !isBig && !state.bonusMode) {
+    // Auto-play: only advance immediately when there is no win to display
+    if (!hasWin && !state.bonusMode) {
       get()._advanceAutoPlay()
     }
   },
