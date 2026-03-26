@@ -27,7 +27,7 @@ const SYMBOL_IMG_STYLE = {
   bikerCarl:   { objectFit: 'cover', objectPosition: 'center 15%' },
   crazyJoe:    { objectFit: 'cover', objectPosition: 'center 15%' },
   goldenWild:  { objectFit: 'cover', objectPosition: 'center' },
-  bonus:       { objectFit: 'contain', objectPosition: 'center', padding: '3px' },
+  bonus:       { objectFit: 'cover', objectPosition: 'center center' },
   soap:        { objectFit: 'cover', objectPosition: 'center' },
   lighter:     { objectFit: 'cover', objectPosition: 'center' },
   shank:       { objectFit: 'cover', objectPosition: 'center' },
