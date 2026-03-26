@@ -12,14 +12,22 @@ export default function TransitionScreen() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0, transition: { duration: 0.4 } }}
-          style={{
-            backgroundImage:    `url(${import.meta.env.BASE_URL}assets/bonus_entry_background.jpg)`,
-            backgroundSize:     'cover',
-            backgroundPosition: 'center',
-            backgroundColor:    '#000',
-          }}
+          style={{ backgroundColor: 'rgba(0,0,0,0.82)' }}
         >
-          {/* Pulsing red darkening overlay over the entry background */}
+          {/* Full bonus image — contain so both characters are always visible */}
+          <img
+            src={`${import.meta.env.BASE_URL}assets/bonus_entry_background.jpg`}
+            alt=""
+            style={{
+              position: 'absolute', inset: 0,
+              width: '100%', height: '100%',
+              objectFit: 'contain',
+              objectPosition: 'center',
+              pointerEvents: 'none',
+            }}
+          />
+
+          {/* Pulsing red darkening overlay */}
           <motion.div
             className="absolute inset-0"
             animate={{ backgroundColor: ['rgba(0,0,0,0)', 'rgba(26,0,0,0.55)', 'rgba(0,0,0,0)'] }}

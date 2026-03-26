@@ -9,8 +9,8 @@ const SYMBOL_IMAGES = {
   heinrich3rd: `${A}/heinrich_3rd.jpeg`,
   bikerCarl:   `${A}/biker_carl.jpeg`,
   crazyJoe:    `${A}/crazy_joe.jpeg`,
-  goldenWild:  `${A}/wild_ec.jpeg`,       // clean WILD badge (no "SPLIT" text)
-  bonus:       `${A}/bonus_scatter.jpg`,
+  goldenWild:  `${A}/wild_ec.jpeg`,
+  bonus:       `${A}/Bonus2.jpeg`,
   soap:        `${A}/soap.jpeg`,
   lighter:     `${A}/lighter.jpeg`,
   shank:       `${A}/shank.jpeg`,
@@ -27,7 +27,7 @@ const SYMBOL_IMG_STYLE = {
   bikerCarl:   { objectFit: 'cover', objectPosition: 'center 15%' },
   crazyJoe:    { objectFit: 'cover', objectPosition: 'center 15%' },
   goldenWild:  { objectFit: 'cover', objectPosition: 'center' },
-  bonus:       { objectFit: 'cover', objectPosition: 'center top' },
+  bonus:       { objectFit: 'contain', objectPosition: 'center', padding: '3px' },
   soap:        { objectFit: 'cover', objectPosition: 'center' },
   lighter:     { objectFit: 'cover', objectPosition: 'center' },
   shank:       { objectFit: 'cover', objectPosition: 'center' },
@@ -43,7 +43,6 @@ export default function Symbol({ symbol, isWinning, alarmMode, jwMultiplier, isD
   const isJW          = isWild && jwMultiplier != null
   const isPremiumChar = PREMIUM_IDS.has(symbol.id)
 
-  // isJW → use jumping-wild badge; otherwise normal image
   const imageUrl = isJW ? JW_IMAGE : (SYMBOL_IMAGES[symbol.id] ?? null)
   const imgStyle = isJW
     ? { objectFit: 'cover', objectPosition: 'center' }
@@ -81,7 +80,7 @@ export default function Symbol({ symbol, isWinning, alarmMode, jwMultiplier, isD
 
   const borderStyle = isWild
     ? multiplierJustBoosted ? '2px solid #ef4444' : '2px solid #fef08a'
-    : isWinning     ? '2px solid #facc15'
+    : isWinning     ? '3px solid #facc15'
     : isBonus       ? '2px solid #f59e0b'
     : isPremiumChar ? `2px solid ${symbol.color}`
     :                 '1px solid rgba(255,255,255,0.18)'
@@ -90,9 +89,10 @@ export default function Symbol({ symbol, isWinning, alarmMode, jwMultiplier, isD
     ? '0 0 28px #ef4444cc, inset 0 0 12px rgba(239,68,68,0.3)'
     : isWild
       ? '0 0 18px #fbbf24bb, inset 0 0 8px rgba(255,220,80,0.3)'
-      : isWinning     ? '0 0 14px #facc15cc'
-      : isPremiumChar ? `0 0 8px 2px ${symbol.color}66`
-      : undefined
+      : isWinning
+        ? '0 0 22px #facc15ff, 0 0 44px #f97316bb, inset 0 0 12px rgba(250,204,21,0.25)'
+        : isPremiumChar ? `0 0 8px 2px ${symbol.color}66`
+        : undefined
 
   // ── Animations ─────────────────────────────────────────────────────────
   const animateProps = (() => {
@@ -101,7 +101,7 @@ export default function Symbol({ symbol, isWinning, alarmMode, jwMultiplier, isD
     if (isWild && isWinning)   return { scale: [1, 1.07, 1], boxShadow: ['0 0 10px #fbbf24', '0 0 28px #fbbf24', '0 0 10px #fbbf24'] }
     if (isWild)                return { boxShadow: ['0 0 8px #fbbf2466', '0 0 20px #fbbf24cc', '0 0 8px #fbbf2466'] }
     if (isBonus && alarmMode)  return { scale: [1, 1.12, 1], opacity: [1, 0.5, 1] }
-    if (isWinning)             return { scale: [1, 1.06, 1] }
+    if (isWinning)             return { scale: [1, 1.09, 1], boxShadow: ['0 0 14px #facc15', '0 0 38px #facc15', '0 0 14px #facc15'] }
     return {}
   })()
 
@@ -127,7 +127,7 @@ export default function Symbol({ symbol, isWinning, alarmMode, jwMultiplier, isD
       animate={animateProps}
       transition={transitionProps}
     >
-      {/* Text fallback (zIndex 1) — image covers it at zIndex 3 */}
+      {/* Text fallback (zIndex 1) */}
       {isWild ? (
         <>
           <span style={{ position: 'relative', zIndex: 1, fontSize: '16px', lineHeight: 1 }}>★</span>
@@ -137,7 +137,7 @@ export default function Symbol({ symbol, isWinning, alarmMode, jwMultiplier, isD
         <span style={{ position: 'relative', zIndex: 1 }}>{symbol.name}</span>
       )}
 
-      {/* Symbol image — zIndex 3, covers text fallback */}
+      {/* Symbol image — zIndex 3 */}
       {imageUrl && (
         <img
           src={imageUrl}
@@ -153,38 +153,56 @@ export default function Symbol({ symbol, isWinning, alarmMode, jwMultiplier, isD
         />
       )}
 
-      {/* Dark overlay — covers ALL cells (including wilds) during spin.
-          JWs stay bright because Reel.jsx passes isDark=false when isJW. */}
-      <div
+      {/* Close symbol placeholder — shown during spin (isDark), fades out on land */}
+      <img
+        src={`${A}/CloseSimbol.jpeg`}
+        alt=""
         style={{
-          position: 'absolute', inset: 0, zIndex: 6,
-          backgroundColor: 'rgba(0,0,0,0.88)',
-          borderRadius: '5px',
-          opacity: isDark ? 1 : 0,
-          transition: 'opacity 0.25s ease',
+          position:   'absolute', inset: 0,
+          width:      '100%', height: '100%',
+          objectFit:  'cover', objectPosition: 'center',
           pointerEvents: 'none',
+          zIndex:     6,
+          borderRadius: '5px',
+          opacity:    isDark ? 1 : 0,
+          transition: 'opacity 0.25s ease',
         }}
       />
 
-      {/* JW multiplier badge — above everything at zIndex 10 */}
+      {/* JW multiplier badge — centered, golden, above everything */}
       {isJW && (
-        <motion.span
+        <motion.div
           key={jwMultiplier}
           style={{
-            position:        'absolute', bottom: '3px', right: '3px',
-            zIndex:          10,
-            fontSize:        '11px', fontWeight: 900, lineHeight: 1.4,
-            color:           multiplierJustBoosted ? '#fff' : '#ef4444',
-            backgroundColor: multiplierJustBoosted ? '#dc2626' : 'rgba(0,0,0,0.8)',
-            borderRadius:    '3px', padding: '0 4px',
-            border:          multiplierJustBoosted ? '1px solid #fca5a5' : '1px solid #ef444466',
+            position:  'absolute',
+            bottom:    '6px',
+            left:      '50%',
+            transform: 'translateX(-50%)',
+            zIndex:    10,
+            background: multiplierJustBoosted
+              ? 'linear-gradient(135deg, #b91c1c, #ef4444, #fca5a5)'
+              : 'linear-gradient(135deg, #78350f, #b45309, #fbbf24, #b45309)',
+            borderRadius: '6px',
+            padding:    '3px 9px',
+            border:     multiplierJustBoosted ? '1.5px solid #fca5a5' : '1.5px solid #fef08a',
+            boxShadow:  multiplierJustBoosted
+              ? '0 0 16px #ef4444cc, 0 2px 4px rgba(0,0,0,0.6)'
+              : '0 0 14px #fbbf24bb, 0 2px 4px rgba(0,0,0,0.6)',
+            whiteSpace: 'nowrap',
           }}
           initial={{ scale: 1.6, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 0.25, ease: 'backOut' }}
         >
-          ×{jwMultiplier}
-        </motion.span>
+          <span style={{
+            fontSize:   '13px',
+            fontWeight: 900,
+            color:      multiplierJustBoosted ? '#fff' : '#000',
+            letterSpacing: '0.02em',
+          }}>
+            ×{jwMultiplier}
+          </span>
+        </motion.div>
       )}
     </motion.div>
   )

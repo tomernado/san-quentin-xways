@@ -43,9 +43,19 @@ export const getRandomSymbol = () => {
   return { id, name: PAYTABLE[id].name, color: PAYTABLE[id].color }
 }
 
-// Each slot in a reel is fully independent — no stacking
-export const generateReel = (rows = 3) =>
-  Array.from({ length: rows }, () => getRandomSymbol())
+// Each slot in a reel is independent — max 1 bonus symbol per reel column
+export const generateReel = (rows = 3) => {
+  let bonusSeen = false
+  return Array.from({ length: rows }, () => {
+    let sym = getRandomSymbol()
+    if (sym.id === 'bonus' && bonusSeen) {
+      // Re-roll until we get a non-bonus symbol
+      while (sym.id === 'bonus') sym = getRandomSymbol()
+    }
+    if (sym.id === 'bonus') bonusSeen = true
+    return sym
+  })
+}
 
 // Bonus reel strip — only the 10 paytable symbols (no wilds, no bonus scatter)
 const BONUS_REEL_KEYS    = SYMBOL_KEYS.filter(id => id !== 'bonus')
@@ -87,6 +97,16 @@ export const generateECSymbol = () => {
   }
   const id = PREMIUM_IDS[PREMIUM_IDS.length - 1]
   return { id, name: PAYTABLE[id].name, color: PAYTABLE[id].color }
+}
+
+// Paired EC generation — ensures top and bottom of the same reel can't both be razor
+export const generateECPair = () => {
+  const top = generateECSymbol()
+  let bottom = generateECSymbol()
+  if (top.id === 'razorSplit' && bottom.id === 'razorSplit') {
+    while (bottom.id === 'razorSplit') bottom = generateECSymbol()
+  }
+  return { top, bottom }
 }
 
 // Top EC during Lockdown Spins — shows free spin contribution (1–3)

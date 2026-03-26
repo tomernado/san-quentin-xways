@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { generateReel, generateBonusReel, generateECSymbol, generateBonusSpinEC, GOLDEN_WILD } from '../data/symbols'
+import { generateReel, generateBonusReel, generateECSymbol, generateECPair, generateBonusSpinEC, GOLDEN_WILD } from '../data/symbols'
 import { calculateWins } from '../logic/calculateWins'
 
 const REELS = 5
@@ -88,12 +88,22 @@ export const useGameStore = create((set, get) => ({
   showBonusBuy:       false,
   showBonusEnd:       false,
 
+  // Auto-play
+  autoPlaying:   false,
+  autoPlaysLeft: 0,
+
+  // Big-win hype (win >= $50)
+  bigWinHype: false,
+
   // ── Actions ────────────────────────────────────────────────────────────
 
   spin() {
     const { balance, bet, spinPhase, bonusMode } = get()
     if (spinPhase !== 'idle' || bonusMode) return
-    if (balance < bet) return
+    if (balance < bet) {
+      set({ autoPlaying: false, autoPlaysLeft: 0 })
+      return
+    }
     set({
       spinPhase:    'spinning',
       balance:      +(balance - bet).toFixed(2),
@@ -108,6 +118,7 @@ export const useGameStore = create((set, get) => ({
       winningCells: new Set(),
       showWin:      false,
       showBigWin:   false,
+      bigWinHype:   false,
     })
     setTimeout(() => get()._landReel(0), 400)
   },
@@ -148,9 +159,7 @@ export const useGameStore = create((set, get) => ({
 
     // ── < 3 bonuses → normal win flow ────────────────────────────────────
     const newECs = makeEmptyECs()
-    bonusReels.forEach(i => {
-      newECs[i] = { top: generateECSymbol(), bottom: generateECSymbol() }
-    })
+    bonusReels.forEach(i => { newECs[i] = generateECPair() })
 
     // bonus → Golden Wild
     const finalGrid = reelSymbols.map(col =>
@@ -238,6 +247,9 @@ export const useGameStore = create((set, get) => ({
       winningCells:      new Set(),
       showWin:           false,
       showBigWin:        false,
+      bigWinHype:        false,
+      autoPlaying:       false,
+      autoPlaysLeft:     0,
     })
   },
 
@@ -274,9 +286,7 @@ export const useGameStore = create((set, get) => ({
 
     // Pre-generate all new EC content for this spin
     const allNewECs = makeEmptyECs()
-    bonusActiveReels.forEach(i => {
-      allNewECs[i] = { top: generateECSymbol(), bottom: generateECSymbol() }
-    })
+    bonusActiveReels.forEach(i => { allNewECs[i] = generateECPair() })
 
     // ── t=0: Board dark, JW jumps ─────────────────────────────────────────
     const movedWilds = moveJumpingWilds(jumpingWilds)
@@ -292,6 +302,7 @@ export const useGameStore = create((set, get) => ({
       winningCells:  new Set(),
       showWin:       false,
       showBigWin:    false,
+      bigWinHype:    false,
     })
 
     // ── Top ECs reveal L→R (active reels only) ────────────────────────────
@@ -464,22 +475,59 @@ export const useGameStore = create((set, get) => ({
 
   _showWins() {
     const state = get()
+    const totalWin  = state._pendingTotalWin || 0
+    const isBig     = !!state._pendingIsBigWin && state.winAmount > 0
+    const isHype    = totalWin >= 50   // $50+ triggers board shake + slow count-up
+
     const updates = {
-      balance:    state._pendingTotalWin > 0
-                    ? +(state.balance + state._pendingTotalWin).toFixed(2)
-                    : state.balance,
-      showWin:    state.winAmount > 0 && !state._pendingIsBigWin,
-      showBigWin: !!state._pendingIsBigWin && state.winAmount > 0,
+      balance:    totalWin > 0 ? +(state.balance + totalWin).toFixed(2) : state.balance,
+      showWin:    state.winAmount > 0 && !isBig,
+      showBigWin: false,          // always delayed below
+      bigWinHype: isHype,
     }
     if (state.bonusMode) {
-      updates.totalBonusWin = +((state.totalBonusWin || 0) + (state._pendingTotalWin || 0)).toFixed(2)
+      updates.totalBonusWin = +((state.totalBonusWin || 0) + totalWin).toFixed(2)
     }
     set(updates)
 
-    // End bonus if last spin and no win overlay to wait for
-    if (state.bonusMode && state.freeSpinsLeft <= 0 && !updates.showWin && !updates.showBigWin) {
+    if (isBig) {
+      // 2.5 s observation time so player sees the winning cells before the popup
+      setTimeout(() => set({ showBigWin: true }), 2500)
+    }
+
+    // End bonus if last spin and nothing to wait for
+    if (state.bonusMode && state.freeSpinsLeft <= 0 && !updates.showWin && !isBig) {
       setTimeout(() => get()._endBonus(), 800)
     }
+
+    // Auto-play: advance if there is no win overlay to wait for
+    if (!updates.showWin && !isBig && !state.bonusMode) {
+      get()._advanceAutoPlay()
+    }
+  },
+
+  // ── Auto-play ────────────────────────────────────────────────────────────
+
+  _advanceAutoPlay() {
+    const { autoPlaying, autoPlaysLeft, bonusMode, spinPhase } = get()
+    if (!autoPlaying || bonusMode || spinPhase !== 'idle') return
+    const newLeft = autoPlaysLeft - 1
+    if (newLeft <= 0) {
+      set({ autoPlaying: false, autoPlaysLeft: 0 })
+      return
+    }
+    set({ autoPlaysLeft: newLeft })
+    setTimeout(() => { if (get().autoPlaying) get().spin() }, 1300)
+  },
+
+  startAutoPlay(count) {
+    if (get().spinPhase !== 'idle' || get().bonusMode) return
+    set({ autoPlaying: true, autoPlaysLeft: count })
+    get().spin()
+  },
+
+  stopAutoPlay() {
+    set({ autoPlaying: false, autoPlaysLeft: 0 })
   },
 
   // ── Dismiss actions ────────────────────────────────────────────────────
@@ -487,13 +535,21 @@ export const useGameStore = create((set, get) => ({
   clearWin() {
     const { bonusMode, freeSpinsLeft } = get()
     set({ showWin: false, winningCells: new Set() })
-    if (bonusMode && freeSpinsLeft <= 0) setTimeout(() => get()._endBonus(), 500)
+    if (bonusMode && freeSpinsLeft <= 0) {
+      setTimeout(() => get()._endBonus(), 500)
+    } else {
+      get()._advanceAutoPlay()
+    }
   },
 
   closeBigWin() {
     const { bonusMode, freeSpinsLeft } = get()
-    set({ showBigWin: false, winningCells: new Set() })
-    if (bonusMode && freeSpinsLeft <= 0) setTimeout(() => get()._endBonus(), 500)
+    set({ showBigWin: false, winningCells: new Set(), bigWinHype: false })
+    if (bonusMode && freeSpinsLeft <= 0) {
+      setTimeout(() => get()._endBonus(), 500)
+    } else {
+      get()._advanceAutoPlay()
+    }
   },
 
   setBet: (amount) => set({ bet: amount }),

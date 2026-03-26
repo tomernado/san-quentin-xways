@@ -19,7 +19,10 @@ function useCountUp(target, onDone) {
     targetRef.current = to
     startRef.current  = performance.now()
     const range = to - from
-    const duration = Math.max(600, Math.min(2800, range * 180))
+    const isHype = to >= 50
+    const duration = isHype
+      ? Math.max(2000, Math.min(6000, range * 400))
+      : Math.max(600, Math.min(2800, range * 180))
 
     const tick = (now) => {
       const t = Math.min((now - startRef.current) / duration, 1)

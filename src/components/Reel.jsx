@@ -83,7 +83,7 @@ export default function Reel({ reelIndex, symbols }) {
           transition={transitionValue}
         >
           {cells.map(({ symbol, rowIndex, clone, key, flex, jwMult, isJW }) => {
-            const jwMultiplier = jwMult > 1 ? jwMult : null
+            const jwMultiplier = jwMult ?? null
             return (
               <motion.div
                 key={key}
