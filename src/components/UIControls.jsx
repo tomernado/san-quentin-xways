@@ -150,16 +150,21 @@ export default function UIControls() {
       <button
         onClick={openBonusBuy}
         disabled={isSpinning || bonusMode}
-        className="w-10 h-10 sm:w-14 sm:h-14 rounded-full font-bold text-xl sm:text-2xl flex items-center justify-center transition-all"
+        className="rounded-lg font-black flex items-center justify-center transition-all"
         style={{
           background:  isSpinning || bonusMode ? '#374151' : 'linear-gradient(135deg, #fbbf24, #f59e0b)',
           color:       isSpinning || bonusMode ? '#6b7280' : '#000',
           boxShadow:   isSpinning || bonusMode ? 'none' : '0 4px 20px rgba(251,191,36,0.4)',
           cursor:      isSpinning || bonusMode ? 'not-allowed' : 'pointer',
           opacity:     bonusMode ? 0.4 : 1,
+          fontSize:    '10px',
+          lineHeight:  1.2,
+          padding:     '6px 8px',
+          minWidth:    '48px',
+          letterSpacing: '0.03em',
         }}
       >
-        ⚡
+        BONUS<br />BUY
       </button>
     </div>
   )
