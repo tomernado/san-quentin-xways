@@ -42,9 +42,9 @@ export default function App() {
       {/* Header */}
       <div className="relative z-10 mb-2 sm:mb-4 text-center">
         <h1 className="text-xl sm:text-3xl font-black tracking-widest text-yellow-400 uppercase">
-          San Quentin <span className="text-white">xWays</span>
+          San Quentin <span className="text-white">The Revenge</span>
         </h1>
-        <p className="text-yellow-600 text-xs tracking-widest mt-1">WIN UP TO 150,000X</p>
+        <p className="text-yellow-400 text-xs sm:text-sm font-bold tracking-widest mt-1" style={{ textShadow: '0 0 10px #fbbf24aa' }}>WIN UP TO 150,000X</p>
       </div>
 
       {/* Game container */}
