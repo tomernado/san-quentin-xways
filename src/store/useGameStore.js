@@ -492,15 +492,16 @@ export const useGameStore = create((set, get) => ({
     set(updates)
 
     if (hasWin) {
-      // ~3 flash cycles (3 × 0.65 s ≈ 1950 ms) before the popup.
-      // Guard: only show if we haven't started a new spin by then.
+      // Small wins (< $3): show after 1 flash (~650 ms)
+      // Larger wins: show after 3 flashes (~1900 ms)
+      const flashDelay = state.winAmount < 3 ? 650 : 1900
       const snapWin = state.winAmount
       setTimeout(() => {
         const s = get()
         if (s.spinPhase !== 'idle' || s.winAmount !== snapWin) return
         if (isBig) set({ showBigWin: true })
         else       set({ showWin: true })
-      }, 1900)
+      }, flashDelay)
     }
 
     // End bonus if last spin and no win at all
